@@ -3,6 +3,14 @@ const express = require('express');
 const { google } = require('googleapis');
 const bodyParser = require('body-parser');
 
+const app = express(); // ✅ Declare app before using it
+const PORT = process.env.PORT || 3000;
+
+// Google Sheets setup
+const SHEET_ID = '1tazaMy48peam23mcA_XYZQqjaAjdLyRQh416SJ35i1c'; // ✅ Use your actual Sheet ID
+const SHEET_NAME = 'Sheet1';
+
+// Load credentials from Render secret file
 const path = '/etc/secrets/smpt-461213-c9200e31a1c6.json';
 const credentials = JSON.parse(fs.readFileSync(path, 'utf-8'));
 
@@ -11,12 +19,11 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
-
 app.use(bodyParser.json());
 
 // ✅ Webhook verification
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = 'mytoken';
+  const VERIFY_TOKEN = 'mytoken'; // Change this to your own token
 
   if (
     req.query['hub.mode'] === 'subscribe' &&
@@ -30,7 +37,7 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-// ✅ Webhook to receive messages
+// ✅ Webhook to receive WhatsApp messages
 app.post('/webhook', async (req, res) => {
   try {
     const entry = req.body?.entry?.[0]?.changes?.[0]?.value;
@@ -51,7 +58,7 @@ app.post('/webhook', async (req, res) => {
     // Check for duplicates
     const existing = await sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${SHEET_NAME}!B:B`, // Phone numbers in column B
+      range: `${SHEET_NAME}!B:B`,
     });
 
     const existingPhones = existing.data.values?.flat() || [];
@@ -60,7 +67,7 @@ app.post('/webhook', async (req, res) => {
       return res.sendStatus(200);
     }
 
-    // Append new row: Name, Phone, Message
+    // Append new row
     await sheets.spreadsheets.values.append({
       spreadsheetId: SHEET_ID,
       range: `${SHEET_NAME}!A1`,
@@ -78,7 +85,7 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// ✅ Start server
+// ✅ Start the server
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
