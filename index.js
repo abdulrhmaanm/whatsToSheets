@@ -1,17 +1,16 @@
+const fs = require('fs');
 const express = require('express');
 const { google } = require('googleapis');
 const bodyParser = require('body-parser');
-const credentials = require('./smpt-461213-c9200e31a1c6.json');
 
-const app = express();
-const PORT = 3000;
-const SHEET_ID = '1tazaMy48peam23mcA_XYZQqjaAjdLyRQh416SJ35i1c';
-const SHEET_NAME = 'Sheet1';
+const path = '/etc/secrets/smpt-461213-c9200e31a1c6.json';
+const credentials = JSON.parse(fs.readFileSync(path, 'utf-8'));
 
 const auth = new google.auth.GoogleAuth({
   credentials,
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
+
 
 app.use(bodyParser.json());
 
